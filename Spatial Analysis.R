@@ -79,13 +79,17 @@ ggplot(ocurrences_yearp, aes(x=Year,ocurrencesp,fill=Category)) + geom_bar(stat=
 ocurrences_yearp = ocurrences_yearp[order(ocurrences_yearp$Year,ocurrences_yearp$Category),]
 ggplot(ocurrences_yearp, aes(x=Year,ocurrencesp,fill=Category)) + geom_bar(stat = 'identity')
 
-ocurrences_district = ddply(sig_train,.(Category,PdDistrict),summarize,ocurrences =length(Category))
+ocurrences_district = ddply(sig_train,.(Category,PdDistrict,Hour),summarize,ocurrences =length(Category))
 ocurrences_total = ddply(sig_train,.(PdDistrict),summarize, t_oc = length(PdDistrict))
 ocurrences_district = merge(ocurrences_district,ocurrences_total,by="PdDistrict")
 ocurrences_district$oc_perc = ocurrences_district$ocurrences / ocurrences_district$t_oc
-ocurrences_district = ocurrences_district[order(ocurrences_district$PdDistrict,ocurrences_district$oc_perc,decreasing = TRUE),]
+ocurrences_district = ocurrences_district[order(ocurrences_district$PdDistrict,ocurrences_district$Category,ocurrences_district$oc_perc,decreasing = TRUE),]
 
 ggplot(ocurrences_district, aes(x=PdDistrict,oc_perc,fill=Category)) + geom_bar(stat = 'identity') + facet_wrap(~PdDistrict)
+
+
+max_cat=ddply(ocurrences_district,.(PdDistrict,Hour),summarize,max_oc=max(ocurrences),cat_max=Category[which.max(ocurrences)])
+ggplot(max_cat,aes(x=PdDistrict,y=Hour))+geom_point(aes(size=max_oc,colour=cat_max))
 
 
 san_fran = get_map(location='San Francisco', zoom = 12, maptype = 'toner')
